@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-econdatalens}
+      POSTGRES_USER: ${POSTGRES_USER:-econdatalens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    ports:
+      # Bound to localhost so the database isn't reachable from other machines.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # PG 18+ images want the mount at /var/lib/postgresql (not .../data) so
+      # pg_upgrade between major versions works inside the one mount.
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  etl:
+    build: .
+    restart: "no"
+    environment:
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=${POSTGRES_DB:-econdatalens};Username=${POSTGRES_USER:-econdatalens};Password=${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      # BLS blocks anonymous/browser-like agents; identify yourself with contact info. Set BLS_CONTACT_EMAIL in .env.
+      BlsOptions__UserAgent: EconDataLens/1.0 (${BLS_CONTACT_EMAIL:?set BLS_CONTACT_EMAIL to your email})
+      # Persist the BLS download cache between runs (DeleteDownloadedFiles defaults to false).
+      DownloadOptions__DownloadDirectory: downloads
+      # Historical backfill (data back to 1913). Overlapping partitions are applied
+      # one at a time and cu.data.0.Current is always applied last, so list all of them.
+      # BlsOptions__CPI__HistoricalDataFiles__0: cu.data.1.AllItems
+      # BlsOptions__CPI__HistoricalDataFiles__1: cu.data.2.Summaries
+      # BlsOptions__CPI__HistoricalDataFiles__2: cu.data.3.AsizeNorthEast
+      # BlsOptions__CPI__HistoricalDataFiles__3: cu.data.4.AsizeNorthCentral
+      # BlsOptions__CPI__HistoricalDataFiles__4: cu.data.5.AsizeSouth
+      # BlsOptions__CPI__HistoricalDataFiles__5: cu.data.6.AsizeWest
+      # BlsOptions__CPI__HistoricalDataFiles__6: cu.data.7.OtherNorthEast
+      # BlsOptions__CPI__HistoricalDataFiles__7: cu.data.8.OtherNorthCentral
+      # BlsOptions__CPI__HistoricalDataFiles__8: cu.data.9.OtherSouth
+      # BlsOptions__CPI__HistoricalDataFiles__9: cu.data.10.OtherWest
+      # BlsOptions__CPI__HistoricalDataFiles__10: cu.data.11.USFoodBeverage
+      # BlsOptions__CPI__HistoricalDataFiles__11: cu.data.12.USHousing
+      # BlsOptions__CPI__HistoricalDataFiles__12: cu.data.13.USApparel
+      # BlsOptions__CPI__HistoricalDataFiles__13: cu.data.14.USTransportation
+      # BlsOptions__CPI__HistoricalDataFiles__14: cu.data.15.USMedical
+      # BlsOptions__CPI__HistoricalDataFiles__15: cu.data.16.USRecreation
+      # BlsOptions__CPI__HistoricalDataFiles__16: cu.data.17.USEducationAndCommunication
+      # BlsOptions__CPI__HistoricalDataFiles__17: cu.data.18.USOtherGoodsAndServices
+      # BlsOptions__CPI__HistoricalDataFiles__18: cu.data.19.PopulationSize
+      # BlsOptions__CPI__HistoricalDataFiles__19: cu.data.20.USCommoditiesServicesSpecial
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - downloads:/app/downloads
+
+volumes:
+  pgdata:
+  downloads:

@@ -1,0 +1,23 @@
+# Git
+.git/
+.gitignore
+
+# Build output
+bin/
+obj/
+
+# Local runtime artifacts
+downloads/
+
+# Documentation and tooling
+.github/
+*.md
+dotnet-tools.json
+
+# Local settings (the example file is baked into the image instead)
+EconDataLens.Etl/appsettings.json
+
+# Secrets (compose reads .env itself; it must not be copied into the image)
+.env
+.env.*
+!.env.example

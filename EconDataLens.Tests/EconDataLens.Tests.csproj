@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector" Version="10.1.0"/>
+        <PackageReference Include="GitHubActionsTestLogger" Version="3.0.5">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0"/>
+        <PackageReference Include="Npgsql" Version="10.0.3" />
+        <PackageReference Include="NUnit" Version="4.6.1"/>
+        <PackageReference Include="NUnit.Analyzers" Version="4.15.0"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="6.3.1"/>
+        <PackageReference Include="Testcontainers.PostgreSql" Version="4.16.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="NUnit.Framework"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\EconDataLens.Application\EconDataLens.Application.csproj" />
+      <ProjectReference Include="..\EconDataLens.Domain\EconDataLens.Domain.csproj" />
+      <ProjectReference Include="..\EconDataLens.Infrastructure\EconDataLens.Infrastructure.csproj" />
+      <ProjectReference Include="..\EconDataLens.Etl\EconDataLens.Etl.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="TestData/**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+   </ItemGroup>
+
+    <!-- The Etl reference would copy its (gitignored, possibly credential-bearing) appsettings files into the
+         test output, where any test using default host configuration would read them. Tests supply their own. -->
+    <Target Name="ExcludeEtlAppSettings" AfterTargets="GetCopyToOutputDirectoryItems">
+        <ItemGroup>
+            <AllItemsFullPathWithTargetPath Remove="@(AllItemsFullPathWithTargetPath)"
+                                            Condition="$([System.String]::Copy('%(Filename)%(Extension)').StartsWith('appsettings'))" />
+            <_SourceItemsToCopyToOutputDirectory Remove="@(_SourceItemsToCopyToOutputDirectory)"
+                                                 Condition="$([System.String]::Copy('%(Filename)%(Extension)').StartsWith('appsettings'))" />
+            <_SourceItemsToCopyToOutputDirectoryAlways Remove="@(_SourceItemsToCopyToOutputDirectoryAlways)"
+                                                       Condition="$([System.String]::Copy('%(Filename)%(Extension)').StartsWith('appsettings'))" />
+        </ItemGroup>
+    </Target>
+
+</Project>

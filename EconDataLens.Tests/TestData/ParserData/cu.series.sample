@@ -1,0 +1,4 @@
+series_id        	area_code	item_code	seasonal	periodicity_code	base_code	base_period	series_title	footnote_codes	begin_year	begin_period	end_year	end_period
+CUSR0000SA0      	0000	SA0	S	R	S	1982-84=100	All items in U.S. city average, all urban consumers, seasonally adjusted		1947	M01	2026	M09
+CUUR0000AA0      	0000	AA0	U	R	A	1967=100	All items - old base in U.S. city average, all urban consumers, not seasonally adjusted		1913	M01	2026	M09
+CUUS0000AA0      	0000	AA0	U	S	A	1967=100	All items - old base in U.S. city average, all urban consumers, not seasonally adjusted		1984	S01	2026	S01

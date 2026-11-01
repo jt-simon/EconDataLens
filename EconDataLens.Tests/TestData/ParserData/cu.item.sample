@@ -1,0 +1,4 @@
+item_code	item_name	display_level	selectable	sort_sequence
+AA0	All items - old base	0	T	2
+SA0	All items	0	T	1
+SA0L12E	All items less food, shelter, and energy	1	T	363
